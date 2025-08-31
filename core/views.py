@@ -1,5 +1,3 @@
-# core/views.py
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
@@ -106,10 +104,13 @@ class CourseDetailView(DetailView):
         course = context['course']
         user = self.request.user
         
-        if user.is_authenticated and user.role == 'student':
-            # Check if the user has already submitted feedback for this course
-            has_submitted_feedback = Feedback.objects.filter(student=user, course=course).exists()
-            context['has_submitted_feedback'] = has_submitted_feedback
+        if user.is_authenticated:
+            is_enrolled = course.enrollment_set.filter(student=user).exists()
+            context['is_enrolled'] = is_enrolled
+            
+            if user.role == 'student' and is_enrolled:
+                has_submitted_feedback = Feedback.objects.filter(student=user, course=course).exists()
+                context['has_submitted_feedback'] = has_submitted_feedback
         
         return context
 

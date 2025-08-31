@@ -11,22 +11,20 @@
 
             <hr>
 
-            {% if user.is_authenticated and user.role == 'student' %}
-                {% if user in course.students.all %}
-                    <h2>Course Materials</h2>
-                    {% if course.materials.all %}
-                        <ul class="list-group mb-4">
-                            {% for material in course.materials.all %}
-                                <li class="list-group-item">
-                                    <a href="{{ material.file.url }}" target="_blank">
-                                        {{ material.title }} ({{ material.file.name|split:'/'|last }})
-                                    </a>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p class="text-muted">No materials have been added to this course yet.</p>
-                    {% endif %}
+            {% if user.is_authenticated and user.role == 'student' and is_enrolled %}
+                <h2>Course Materials</h2>
+                {% if course.materials.all %}
+                    <ul class="list-group mb-4">
+                        {% for material in course.materials.all %}
+                            <li class="list-group-item">
+                                <a href="{{ material.file.url }}" target="_blank">
+                                    {{ material.title }} ({{ material.file.name|split:'/'|last }})
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No materials have been added to this course yet.</p>
                 {% endif %}
             {% endif %}
 
@@ -51,7 +49,6 @@
                     <p class="text-muted">No students have enrolled in this course yet.</p>
                 {% endif %}
             {% endif %}
-            
         </div>
         <div class="col-md-4">
             <div class="card">
@@ -62,11 +59,11 @@
                     <p><strong>Teacher:</strong> <a href="{% url 'core:user_profile' username=course.teacher.username %}">{{ course.teacher.get_full_name }}</a></p>
                     <p><strong>Created on:</strong> {{ course.created_at|date:"F d, Y" }}</p>
                     
-                    {% if user.is_authenticated and user.role == 'student' and user not in course.students.all %}
+                    {% if user.is_authenticated and user.role == 'student' and not is_enrolled %}
                         <a href="{% url 'core:enroll_in_course' course_id=course.id %}" class="btn btn-primary btn-block">Enroll in this course</a>
                     {% endif %}
 
-                    {% if user.is_authenticated and user.role == 'student' and user in course.students.all %}
+                    {% if user.is_authenticated and user.role == 'student' and is_enrolled %}
                         {% if not has_submitted_feedback %}
                             <a href="{% url 'core:submit_feedback' course_id=course.id %}" class="btn btn-success btn-block">Submit Feedback</a>
                         {% else %}
