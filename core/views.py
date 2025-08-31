@@ -100,6 +100,18 @@ class CourseListView(ListView):
 class CourseDetailView(DetailView):
     model = Course
     template_name = 'core/course_detail.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        course = context['course']
+        user = self.request.user
+        
+        if user.is_authenticated and user.role == 'student':
+            # Check if the user has already submitted feedback for this course
+            has_submitted_feedback = Feedback.objects.filter(student=user, course=course).exists()
+            context['has_submitted_feedback'] = has_submitted_feedback
+        
+        return context
 
 
 @method_decorator(login_required, name='dispatch')

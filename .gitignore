@@ -7,6 +7,9 @@
 /elearning_platform/*.pyc
 /elearning_platform/*.pyo
 /elearning_platform/*.pyd
-core/__pycache__
-core/__pycache__/urls.cpython-312.pyc
-core/__pycache__/views.cpython-312.pyc
+/core/__pycache__/*.pyc
+/core/__pycache__/*.pyo
+/core/__pycache__/*.pyd
+core/templatetags/__pycache__/*.pyc
+core/templatetags/__pycache__/*.pyo
+core/templatetags/__pycache__/*.pyd
