@@ -68,9 +68,27 @@ def teacher_dashboard_view(request):
 def student_dashboard_view(request):
     """
     Display the dashboard for student users.
+    
+    This view now also includes a form for posting status updates directly
+    from the dashboard.
     """
+    # Get the student's enrollments to display.
     enrollments = Enrollment.objects.filter(student=request.user)
-    return render(request, 'core/student_dashboard.html', {'enrollments': enrollments})
+    
+    # Get the student's past status updates.
+    status_updates = StatusUpdate.objects.filter(user=request.user).order_by('-created_at')
+
+    # Create an instance of the status update form.
+    form = StatusUpdateForm()
+    
+    # Define the context to pass to the template.
+    context = {
+        'enrollments': enrollments,
+        'status_updates': status_updates,
+        'form': form
+    }
+    
+    return render(request, 'core/student_dashboard.html', context)
 
 
 class CourseListView(ListView):

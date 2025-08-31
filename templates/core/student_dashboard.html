@@ -1,17 +1,58 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Student Dashboard</h2>
-    <p>Welcome, {{ user.get_full_name }}!</p>
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <h2>Student Dashboard</h2>
+            <h4>Welcome, {{ user.first_name|default:user.username }}!</h4>
+            <p>
+                <a href="{% url 'core:user_profile' user.username %}" class="btn btn-secondary btn-sm">View Full Profile</a>
+            </p>
+            <hr>
+            
+            <h4>Post a New Status Update</h4>
+            <form method="post" action="{% url 'core:user_profile' user.username %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Post Status</button>
+            </form>
+            
+            <hr>
 
-    <form method="post" action="{% url 'post_status_update' %}">
-        {% csrf_token %}
-        {{ status_update_form.as_p }}
-        <button type="submit" class="btn btn-primary">Post Status</button>
-    </form>
-
-    {% include "core/_course_list_partial.html" with title="My Enrolled Courses" item_list=enrollments %}
-
+            <h4>My Recent Status Updates</h4>
+            {% for update in status_updates|slice:":5" %}
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <p class="card-text">{{ update.content }}</p>
+                        <small class="text-muted">{{ update.created_at|timesince }} ago</small>
+                    </div>
+                </div>
+            {% empty %}
+                <p>You have not posted any updates yet.</p>
+            {% endfor %}
+        </div>
+        
+        <div class="col-md-8">
+            <h3>My Enrolled Courses</h3>
+            {% if enrollments %}
+                <div class="list-group">
+                    {% for enrollment in enrollments %}
+                        <a href="{% url 'core:course_detail' enrollment.course.pk %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ enrollment.course.title }}</h5>
+                                <small>Enrolled on {{ enrollment.enrolled_at|date:"F j, Y" }}</small>
+                            </div>
+                            <p class="mb-1">Taught by {{ enrollment.course.teacher.get_full_name }}</p>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    You are not enrolled in any courses yet. <a href="{% url 'core:course_list' %}" class="alert-link">Browse courses now</a>.
+                </div>
+            {% endif %}
+        </div>
     </div>
+</div>
 {% endblock %}

@@ -8,6 +8,9 @@ and includes URL configurations from the 'core' and 'chat' apps.
 
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings  # Import the settings module
+from django.conf.urls.static import static  # Import the static files helper
+
 from rest_framework.routers import DefaultRouter
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
@@ -27,11 +30,7 @@ router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
 router.register(r'courses', CourseViewSet, basename='course')
 router.register(r'enrollments', EnrollmentViewSet, basename='enrollment')
-
-# FIX: The URL path is now 'feedbacks' (plural) for consistency.
 router.register(r'feedbacks', FeedbackViewSet, basename='feedback')
-
-# FIX: The URL path is now 'statusupdates' (plural). This is the key fix for the errors.
 router.register(r'statusupdates', StatusUpdateViewSet, basename='statusupdate')
 
 
@@ -56,3 +55,8 @@ urlpatterns = [
     # Include all standard (non-API) URLs from the core application. This must be last.
     path('', include('core.urls')),
 ]
+
+# This should only be used in a development environment (when DEBUG is True).
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
