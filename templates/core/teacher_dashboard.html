@@ -2,12 +2,37 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Teacher Dashboard</h2>
-    <p>Welcome, {{ user.get_full_name }}!</p>
-
-    <a href="{% url 'create_course' %}" class="btn btn-success">Create New Course</a>
-
-    {% include "core/_course_list_partial.html" with title="My Courses" item_list=courses %}
-
+    <div class="row">
+        <div class="col-12">
+            <h1>Teacher Dashboard</h1>
+            <p>Welcome, {{ user.get_full_name }} ({{ user.username }}).</p>
+            <hr>
+        </div>
     </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h2>Your Courses</h2>
+            {% if courses %}
+                <div class="list-group">
+                    {% for course in courses %}
+                        <a href="{% url 'core:course_detail' pk=course.id %}" class="list-group-item list-group-item-action">
+                            {{ course.title }}
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">You have not created any courses yet.</p>
+            {% endif %}
+            
+            <a href="{% url 'core:create_course' %}" class="btn btn-primary mt-3">Create a New Course</a>
+        </div>
+        
+        <div class="col-md-6">
+            <h2>Notifications</h2>
+            {% comment %} This section would display notifications for the teacher {% endcomment %}
+            <p class="text-muted">No new notifications.</p>
+        </div>
+    </div>
+</div>
 {% endblock %}

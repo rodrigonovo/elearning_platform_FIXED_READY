@@ -1,14 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.contrib import messages
 
 from .forms import CustomUserCreationForm, CourseForm, FeedbackForm, StatusUpdateForm
 from .models import User, Course, Enrollment, Feedback, StatusUpdate
-from .decorators import teacher_required, student_required
+from .decorators import teacher_required, student_required, teacher_is_course_owner
 
 
 def home_view(request):
@@ -129,6 +129,19 @@ class CourseCreateView(CreateView):
         """
         form.instance.teacher = self.request.user
         messages.success(self.request, f'Course "{form.instance.title}" created successfully!')
+        return super().form_valid(form)
+
+
+@method_decorator(login_required, name='dispatch')
+@method_decorator(teacher_is_course_owner, name='dispatch')
+class CourseUpdateView(UpdateView):
+    model = Course
+    form_class = CourseForm
+    template_name = 'core/course_update_form.html'
+    success_url = reverse_lazy('core:course_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, f'Course "{form.instance.title}" updated successfully!')
         return super().form_valid(form)
 
 
