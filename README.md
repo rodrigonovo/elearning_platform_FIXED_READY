@@ -1,65 +1,74 @@
 # eLearning Platform
 
-This project is an eLearning platform built with Django, which implements the functionalities requested in the final assignment. The application allows different types of users (students and teachers) to interact with courses, materials, and with each other through a real-time chat system and status updates.
+This project is an eLearning platform built with Django, implementing the features specified in the final assignment. The application allows different user roles (students and teachers) to interact with courses, materials, and each other through a real-time chat system and status updates.
 
-## Application Features
+## Implemented Functionality
 
 The eLearning platform offers the following main functionalities:
 
-* **User Authentication and Profiles**: Users can create secure, password-protected accounts. The application distinguishes between two user types: `students` and `teachers`. Each user has a profile page that displays personal information, such as their name and photo, and any status updates they have posted. These profiles are visible to other users.
-* **Course Management**: Teachers can create new courses and upload educational materials (like PDFs). Students can view a list of available courses and enroll in them.
-* **Notifications**: The system sends notifications to a teacher when a student enrolls in their course. Similarly, all enrolled students are notified when new material is added to their course.
-* **Real-time Communication**: The platform features a real-time chat application built with Django Channels and WebSockets. This functionality is a core requirement of the project and allows for instant messaging between users.
+* **User Authentication and Profiles**: Users can create secure, password-protected accounts. The application distinguishes between `students` and `teachers` with different permissions. User profiles display information like name and photo, and also show status updates, which are visible to other users.
+* **Course Management**: Teachers can create new courses and upload materials (like PDFs). Students can view a list of available courses and enroll in them.
+* **Notifications**: The system sends notifications to a teacher when a student enrolls in a course, and to enrolled students when new materials are added.
+* **Real-time Communication**: The application includes a real-time chat feature using WebSockets, built with Django Channels and Daphne.
 * **Feedback System**: Students can leave feedback and a rating for courses they are enrolled in.
-* **Search and Access Control**: Teachers have the ability to search for other teachers and students on the platform. They can also block students from accessing their courses. Students can post status updates on their own profiles.
+* **Search and Access Control**: Teachers can search for students and other teachers. They can also block students from their courses.
 
 ## Project Structure and Technologies
 
-The project is structured according to the Model-View-Controller (MVC) architectural pattern, a key concept covered in the course.
+The project follows the Model-View-Controller (MVC) architectural pattern, a key concept covered in the course.
 
-* **Models**: The database schema is defined in `core/models.py`. It includes models for `User` (extending Django's `AbstractUser`), `Course`, `Enrollment`, `Feedback`, `StatusUpdate`, and `Notification` to appropriately model all data and relationships.
-* **Views**: The application logic for serving HTML pages and handling user requests is located in `core/views.py`. These views use decorators and role-based permissions to control access.
-* **API**: A RESTful API is implemented in `core/api.py` using the Django REST Framework (DRF). It provides endpoints with serializers and custom permissions (`IsTeacher`, `IsStudent`) to manage user and course data securely.
-* **Real-time Chat**: The `chat` application uses Django Channels for handling WebSockets. The consumer logic is in `chat/consumers.py` and routing is defined in `chat/routing.py`.
-* **Asynchronous Tasks**: The project leverages asynchronous programming concepts learned in class, such as using Celery for long-running tasks, to improve server responsiveness.
+* **Models**: The database models (`User`, `Course`, `Enrollment`, `Feedback`, `StatusUpdate`, `Notification`) are defined in `core/models.py`. The `User` model extends Django's `AbstractUser` to include custom fields like `role`, `real_name`, and `photo`.
+* **Views**: The application logic for rendering HTML pages is in `core/views.py`. These views use decorators and role-based redirects to control access.
+* **API**: A RESTful API is implemented using the Django REST Framework (DRF) in `core/api.py`. It uses ViewSets for each model and includes custom permissions (`IsTeacher`, `IsStudent`, `IsEnrolledStudent`) to enforce access control.
+* **Real-time Chat**: The `chat` application uses Django Channels for WebSockets. WebSocket routing is in `chat/routing.py`, and the consumer logic is in `chat/consumers.py`.
 
 ## Setup and Running the Application
 
 This project was developed and tested in a Windows 11 environment using Python 3.12.
 
-1.  **Clone the Repository**:
+1.  **Clone the repository**:
     ```bash
     git clone [https://github.com/rodrigonovo/elearning_platform_fixed_ready.git](https://github.com/rodrigonovo/elearning_platform_fixed_ready.git)
     cd elearning_platform_fixed_ready
     ```
-2.  **Create and Activate a Virtual Environment**:
-    ```bash
+2.  **Create and activate the virtual environment**:
+    ```powershell
     py -m venv .venv
     .\.venv\Scripts\Activate.ps1
     ```
-3.  **Install Dependencies**: The `requirements.txt` file lists all necessary packages and their versions, ensuring the application loads as required.
-    ```bash
-    pip install -r requirements.txt
+3.  **Install dependencies**:
+    ```powershell
+    python -m pip install --upgrade pip
+    python -m pip install -r requirements.txt
     ```
-4.  **Database Setup**:
-    ```bash
+    - The dependencies are listed in `requirements.txt`.
+4.  **Execute database migrations**:
+    ```powershell
     python manage.py makemigrations
     python manage.py migrate
+    ```
+5.  **Create a superuser (admin) and demo data**:
+    ```powershell
     python manage.py createsuperuser
     python manage.py seed_demo
     ```
-    * The `seed_demo` command populates the database with sample `teacher` and `student` users for demonstration purposes.
-5.  **Run the Development Server**:
-    ```bash
-    python manage.py runserver
+    - The `seed_demo` command creates sample teachers and students with the password `password`.
+6.  **Collect static files**:
+    ```powershell
+    python manage.py collectstatic --noinput
     ```
-    * **Login Credentials**: The superuser credentials are set during the `createsuperuser` command. The demo users have a username like `teacherX` or `studentY` and the password `password`.
+7.  **Run the ASGI server (Daphne)**:
+    ```powershell
+    daphne elearning_platform.asgi:application
+    ```
+    - The application uses `daphne` to serve both HTTP and WebSocket connections, as configured in `elearning_platform/asgi.py`.
+    
+    - **Login Credentials**: The `superuser` credentials are set with `createsuperuser`. The demo users have a `username` of `teacherX` or `studentY` and the password is `password` for all.
 
 ## Unit Testing
 
-The project includes a suite of unit tests, which is a core requirement for a high-quality application. These tests cover the API functionality and ensure the application behaves as expected.
+The application includes unit tests to ensure the functionality and robustness of the code, particularly for the API endpoints.
 
 To run the tests, use the following command:
-
-```bash
+```powershell
 python manage.py test
