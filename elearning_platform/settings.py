@@ -118,14 +118,13 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
     ],
-    # ESTA É A ALTERAÇÃO: Usamos IsAuthenticated como a permissão padrão.
-    # Isto força a autenticação em todos os endpoints da API por padrão,
-    # garantindo que qualquer pedido não autenticado receba um erro 401.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-}
+    
+    # Add this line to register the custom exception handler.
+    'EXCEPTION_HANDLER': 'core.utils.custom_exception_handler',}
 
 # Daphne ASGI application
 ASGI_APPLICATION = 'elearning_platform.asgi.application'
