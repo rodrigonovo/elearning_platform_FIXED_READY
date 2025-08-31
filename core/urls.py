@@ -16,12 +16,14 @@ urlpatterns = [
     path('courses/<int:course_id>/enroll/', views.enroll_in_course_view, name='enroll_in_course'),
     path('courses/<int:course_id>/feedback/', views.submit_feedback_view, name='submit_feedback'),
     path('courses/<int:course_id>/block/<int:student_id>/', views.block_student_view, name='block_student'),
+    
+    # Profile views
     path('profile/<str:username>/', views.user_profile_view, name='user_profile'),
+    path('profile/<str:username>/edit/', views.ProfileUpdateView.as_view(), name='edit_profile'),
     
     # Class-Based Views for course display and creation
     path('courses/', views.CourseListView.as_view(), name='course_list'),
     path('courses/create/', views.CourseCreateView.as_view(), name='create_course'),
     path('courses/<int:pk>/', views.CourseDetailView.as_view(), name='course_detail'),
     path('courses/<int:pk>/edit/', views.CourseUpdateView.as_view(), name='edit_course'),
-
 ]

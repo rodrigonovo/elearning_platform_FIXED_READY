@@ -10,6 +10,10 @@
             <p class="lead">{{ course.description }}</p>
 
             <hr>
+            
+            {% if user.is_authenticated and user == course.teacher %}
+                <a href="{% url 'core:edit_course' pk=course.id %}" class="btn btn-primary mb-4">Edit Course</a>
+            {% endif %}
 
             {% if user.is_authenticated and user.role == 'student' and is_enrolled %}
                 <h2>Course Materials</h2>

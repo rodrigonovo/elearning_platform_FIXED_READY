@@ -2,13 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
 from django.contrib import messages
 
-from .forms import CustomUserCreationForm, CourseForm, FeedbackForm, StatusUpdateForm
+from .forms import CustomUserCreationForm, CourseForm, FeedbackForm, StatusUpdateForm, ProfileUpdateForm
 from .models import User, Course, Enrollment, Feedback, StatusUpdate
-from .decorators import teacher_required, student_required, teacher_is_course_owner
+from .decorators import teacher_required, student_required, user_is_owner, teacher_is_course_owner
 
 
 def home_view(request):
@@ -133,16 +133,42 @@ class CourseCreateView(CreateView):
 
 
 @method_decorator(login_required, name='dispatch')
-@method_decorator(teacher_is_course_owner, name='dispatch')
+@method_decorator(user_is_owner, name='dispatch')
+class ProfileUpdateView(UpdateView):
+    model = User
+    form_class = ProfileUpdateForm
+    template_name = 'core/profile_update_form.html'
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(User, username=self.kwargs.get('username'))
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Your profile has been updated!')
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        """
+        Redirect to the user's profile page after a successful update.
+        """
+        return reverse('core:user_profile', kwargs={'username': self.object.username})
+
+
+@method_decorator(login_required, name='dispatch')
+@method_decorator(user_is_owner, name='dispatch')
 class CourseUpdateView(UpdateView):
     model = Course
     form_class = CourseForm
     template_name = 'core/course_update_form.html'
-    success_url = reverse_lazy('core:course_list')
 
     def form_valid(self, form):
         messages.success(self.request, f'Course "{form.instance.title}" updated successfully!')
         return super().form_valid(form)
+    
+    def get_success_url(self):
+        """
+        Redirect to the course detail page after a successful update.
+        """
+        return reverse('core:course_detail', kwargs={'pk': self.object.pk})
 
 
 @login_required

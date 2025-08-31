@@ -27,3 +27,12 @@ def teacher_is_course_owner(view_func):
             raise PermissionDenied
         return view_func(request, *args, **kwargs)
     return _wrapped_view
+
+def user_is_owner(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        profile_user = get_object_or_404(User, username=kwargs.get('username'))
+        if not request.user.is_authenticated or request.user != profile_user:
+            raise PermissionDenied
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view

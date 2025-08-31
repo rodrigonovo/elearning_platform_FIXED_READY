@@ -1,5 +1,3 @@
-# core/forms.py
-
 from django import forms
 from .models import Course, Feedback, StatusUpdate, User
 from django.contrib.auth.forms import UserCreationForm
@@ -13,6 +11,14 @@ class CustomUserCreationForm(UserCreationForm):
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'role')
 
+class ProfileUpdateForm(forms.ModelForm):
+    """
+    A form for students to update their profile information.
+    """
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'photo']
+        
 class CourseForm(forms.ModelForm):
     """
     A form for creating and updating Course instances.
