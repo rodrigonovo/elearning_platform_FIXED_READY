@@ -1,85 +1,78 @@
-"""
-Core views for the eLearning platform.
-
-This file uses a mix of function-based views for simple actions and Class-Based
-Views (CBVs) for more complex, model-related operations like listing, creating,
-and updating objects, following Django best practices.
-"""
-
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.http import HttpResponseForbidden, HttpResponseRedirect
-from django.views.generic import ListView, CreateView, DetailView
+from django.views.generic import ListView, DetailView, CreateView
+from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
+from .forms import CustomUserCreationForm, CourseForm, FeedbackForm, StatusUpdateForm
+from .models import User, Course, Enrollment, Feedback, StatusUpdate
+from .decorators import teacher_required, student_required
 
-# Import forms and models
-from .forms import CourseForm, FeedbackForm, StatusUpdateForm, CustomUserCreationForm
-from .models import Course, Enrollment, Notification, StatusUpdate, User
-
-# ====================================================================
-# Function-Based Views (For unique actions and dashboards)
-# ====================================================================
-
-@login_required
-def dashboard_view(request):
-    """Redirects a logged-in user to their role-specific dashboard."""
-    if request.user.role == 'teacher':
-        return redirect('teacher_dashboard')
-    else:
-        return redirect('student_dashboard')
-
-@login_required
-def student_dashboard_view(request):
-    """Displays the dashboard for a student."""
-    if request.user.role != 'student':
-        return HttpResponseForbidden("You are not authorized to view this page.")
-    enrollments = Enrollment.objects.filter(student=request.user).select_related('course')
-    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
-    status_update_form = StatusUpdateForm()
-    context = {
-        'enrollments': enrollments,
-        'notifications': notifications,
-        'status_update_form': status_update_form,
-    }
-    return render(request, 'core/student_dashboard.html', context)
-
-@login_required
-def teacher_dashboard_view(request):
-    """Displays the dashboard for a teacher."""
-    if request.user.role != 'teacher':
-        return HttpResponseForbidden("You are not authorized to view this page.")
-    courses = Course.objects.filter(teacher=request.user)
-    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
-    context = {
-        'courses': courses,
-        'notifications': notifications,
-    }
-    return render(request, 'core/teacher_dashboard.html', context)
-
+# Registration
 def register(request):
-    """Handles new user registration."""
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('login')
+            user = form.save()
+            login(request, user)
+            return redirect('core:dashboard')
     else:
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
 
-# --- FIX: Restoring the missing function-based views for specific actions ---
+# Dashboards
+@login_required
+def dashboard_view(request):
+    if request.user.role == 'teacher':
+        return redirect('core:teacher_dashboard')
+    else:
+        return redirect('core:student_dashboard')
 
 @login_required
+@teacher_required
+def teacher_dashboard_view(request):
+    courses = Course.objects.filter(teacher=request.user)
+    return render(request, 'core/teacher_dashboard.html', {'courses': courses})
+
+@login_required
+@student_required
+def student_dashboard_view(request):
+    enrollments = Enrollment.objects.filter(student=request.user)
+    return render(request, 'core/student_dashboard.html', {'enrollments': enrollments})
+
+# Course Views
+class CourseListView(ListView):
+    model = Course
+    template_name = 'core/course_list.html'
+    context_object_name = 'courses'
+
+class CourseDetailView(DetailView):
+    model = Course
+    template_name = 'core/course_detail.html'
+
+@method_decorator(login_required, name='dispatch')
+@method_decorator(teacher_required, name='dispatch')
+class CourseCreateView(CreateView):
+    model = Course
+    form_class = CourseForm
+    template_name = 'core/create_course.html'
+    success_url = reverse_lazy('core:course_list')
+
+    def form_valid(self, form):
+        form.instance.teacher = self.request.user
+        return super().form_valid(form)
+
+# Function-based views for actions
+@login_required
+@student_required
 def enroll_in_course_view(request, course_id):
-    """Handles the logic for a student to enroll in a course."""
     course = get_object_or_404(Course, id=course_id)
-    if request.user.role == 'student':
-        Enrollment.objects.get_or_create(student=request.user, course=course)
-    return redirect('course_list')
+    Enrollment.objects.get_or_create(student=request.user, course=course)
+    return redirect('core:course_list')
 
 @login_required
+@student_required
 def submit_feedback_view(request, course_id):
-    """Handles the logic for a student to submit feedback for a course."""
     course = get_object_or_404(Course, id=course_id)
     if request.method == 'POST':
         form = FeedbackForm(request.POST)
@@ -88,64 +81,37 @@ def submit_feedback_view(request, course_id):
             feedback.course = course
             feedback.student = request.user
             feedback.save()
-            return redirect('course_list')
+            return redirect('core:course_detail', pk=course_id)
     else:
         form = FeedbackForm()
     return render(request, 'core/feedback_form.html', {'form': form, 'course': course})
 
 @login_required
+@teacher_required
 def block_student_view(request, course_id, student_id):
-    """Handles a teacher's request to block or unblock a student from a course."""
-    if request.user.role != 'teacher':
-        return HttpResponseForbidden("You are not authorized to perform this action.")
-    enrollment = get_object_or_404(Enrollment, course_id=course_id, student_id=student_id, course__teacher=request.user)
-    enrollment.is_blocked = not enrollment.is_blocked
+    enrollment = get_object_or_404(Enrollment, course_id=course_id, student_id=student_id)
+    enrollment.is_blocked = True
     enrollment.save()
-    return redirect('teacher_dashboard')
+    return redirect('core:course_detail', pk=course_id)
+
 
 @login_required
 def user_profile_view(request, username):
-    """Displays a user's public-facing profile page."""
     profile_user = get_object_or_404(User, username=username)
     status_updates = StatusUpdate.objects.filter(user=profile_user).order_by('-created_at')
-    context = {
+    
+    if request.method == 'POST':
+        form = StatusUpdateForm(request.POST)
+        if form.is_valid() and request.user == profile_user:
+            status_update = form.save(commit=False)
+            status_update.user = request.user
+            status_update.save()
+            return redirect('core:user_profile', username=username)
+    else:
+        form = StatusUpdateForm()
+        
+    return render(request, 'core/profile.html', {
         'profile_user': profile_user,
         'status_updates': status_updates,
-    }
-    return render(request, 'core/profile.html', context)
-
-
-# ====================================================================
-# Class-Based Views (For displaying lists and details)
-# ====================================================================
-
-class CourseListView(LoginRequiredMixin, ListView):
-    """Displays a list of all available courses."""
-    model = Course
-    template_name = 'core/course_list.html'
-    context_object_name = 'courses'
-
-class CourseCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
-    """Allows teachers to create a new course."""
-    model = Course
-    form_class = CourseForm
-    template_name = 'core/create_course.html'
-    success_url = '/courses/'
-
-    def test_func(self):
-        return self.request.user.role == 'teacher'
-
-    def form_valid(self, form):
-        form.instance.teacher = self.request.user
-        return super().form_valid(form)
-
-class CourseDetailView(LoginRequiredMixin, DetailView):
-    """Displays the details for a single course."""
-    model = Course
-    template_name = 'core/course_detail.html'
-    context_object_name = 'course'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['enrollments'] = Enrollment.objects.filter(course=self.object).select_related('student')
-        return context
+        'form': form
+    })
