@@ -4,6 +4,11 @@
 {% block content %}
 <div class="container">
     <div class="jumbotron">
+        {% if profile_user.photo %}
+        <img src="{{ profile_user.photo.url }}" alt="{{ profile_user.username }}'s profile picture" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+        {% else %}
+        <img src="{% static 'img/default_profile.png' %}" alt="Default profile picture" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+        {% endif %}
         <h1 class="display-4">{{ profile_user.get_full_name }}</h1>
         <p class="lead">@{{ profile_user.username }} | {{ profile_user.get_role_display }}</p>
         <hr class="my-4">
