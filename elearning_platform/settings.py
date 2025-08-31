@@ -139,9 +139,6 @@ ASGI_APPLICATION = 'elearning_platform.asgi.application'
 # Channel Layers for real-time chat
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
-        },
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
     },
 }

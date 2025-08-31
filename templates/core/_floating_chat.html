@@ -1,0 +1,203 @@
+<style>
+    /* Floating chat icon styles */
+    .chat-icon {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        background-color: #007bff; /* Background color behind the image */
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        z-index: 1000;
+        transition: transform 0.3s ease-in-out;
+        overflow: hidden; /* Ensures the image stays within the circle */
+    }
+    .chat-icon:hover {
+        transform: scale(1.1);
+    }
+    .chat-icon img {
+        width: 100%; /* Make the image fill the circular icon */
+        height: 100%;
+        object-fit: cover; /* Ensures the image covers the area without distortion */
+        border-radius: 50%; /* Apply border-radius to the image as well */
+    }
+    
+    /* Floating chat window styles */
+    .chat-window {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        width: 300px;
+        height: 400px;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        z-index: 1000;
+        display: none; /* Initially hidden */
+        flex-direction: column;
+        font-family: sans-serif;
+    }
+    .chat-header {
+        background-color: #007bff;
+        color: white;
+        padding: 10px;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .chat-header .close-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+    }
+    .chat-messages {
+        flex-grow: 1;
+        padding: 10px;
+        overflow-y: auto;
+        list-style-type: none;
+        margin: 0;
+    }
+    .chat-input {
+        display: flex;
+        padding: 10px;
+        border-top: 1px solid #ccc;
+    }
+    .chat-input input {
+        flex-grow: 1;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 5px;
+    }
+    .chat-input button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin-left: 5px;
+        cursor: pointer;
+    }
+
+    /* New styles for chat bubbles */
+    .chat-messages li {
+        margin-bottom: 8px;
+        padding: 8px 12px;
+        border-radius: 15px;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+    .chat-messages .my-message {
+        background-color: #dcf8c6;
+        margin-left: auto; /* Aligns to the right */
+        text-align: right;
+    }
+    .chat-messages .other-message {
+        background-color: #f1f0f0;
+        margin-right: auto; /* Aligns to the left */
+        text-align: left;
+    }
+    .chat-messages .my-message strong {
+        color: #1e700a;
+    }
+    .chat-messages .other-message strong {
+        color: #333;
+    }
+</style>
+
+<div class="chat-icon" id="chat-icon">
+    {% load static %}
+    <img src="{% static 'chat_icon.png' %}" alt="Chat Icon">
+</div>
+
+<div class="chat-window" id="chat-window">
+    <div class="chat-header">
+        <span>Public Chat</span>
+        <button class="close-btn" id="close-chat-btn">&times;</button>
+    </div>
+    <ul class="chat-messages" id="chat-log"></ul>
+    <div class="chat-input">
+        <input type="text" id="chat-message-input" placeholder="Type a message...">
+        <button id="chat-message-submit">Send</button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatIcon = document.getElementById('chat-icon');
+        const chatWindow = document.getElementById('chat-window');
+        const closeChatBtn = document.getElementById('close-chat-btn');
+        const messageInput = document.getElementById('chat-message-input');
+        const sendBtn = document.getElementById('chat-message-submit');
+        const chatLog = document.getElementById('chat-log');
+        
+        // Pass the current logged-in user's username to the JavaScript
+        const myUsername = '{{ user.username }}';
+        
+        // Toggle chat window visibility
+        chatIcon.addEventListener('click', () => {
+            chatWindow.style.display = 'flex';
+            chatIcon.style.display = 'none';
+        });
+        
+        closeChatBtn.addEventListener('click', () => {
+            chatWindow.style.display = 'none';
+            chatIcon.style.display = 'flex';
+        });
+        
+        // WebSocket logic
+        const roomName = 'general_chat';
+        const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const chatSocket = new WebSocket(
+            protocol + '://' + window.location.host + '/ws/chat/' + roomName + '/'
+        );
+        
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const message = data.message;
+            const username = data.username;
+            
+            const li = document.createElement('li');
+            li.innerHTML = `<strong>${username}:</strong> ${message}`;
+            
+            if (username === myUsername) {
+                li.classList.add('my-message');
+            } else {
+                li.classList.add('other-message');
+            }
+            
+            chatLog.appendChild(li);
+        };
+        
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+        
+        function sendMessage() {
+            const message = messageInput.value;
+            if (message.trim() !== '') {
+                chatSocket.send(JSON.stringify({
+                    'message': message
+                }));
+                messageInput.value = '';
+            }
+        }
+        
+        sendBtn.addEventListener('click', sendMessage);
+        
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    });
+</script>
