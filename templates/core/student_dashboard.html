@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Student Dashboard</h2>
+    <p>Welcome, {{ user.get_full_name }}!</p>
+
+    <form method="post" action="{% url 'post_status_update' %}">
+        {% csrf_token %}
+        {{ status_update_form.as_p }}
+        <button type="submit" class="btn btn-primary">Post Status</button>
+    </form>
+
+    {% include "core/_course_list_partial.html" with title="My Enrolled Courses" item_list=enrollments %}
+
+    </div>
+{% endblock %}

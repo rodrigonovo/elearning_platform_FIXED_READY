@@ -1,0 +1,21 @@
+{% comment %}
+This is a reusable partial template to display a list of courses.
+It's included in both student and teacher dashboards to avoid code duplication.
+This demonstrates the DRY principle from Lesson 3.104.
+{% endcomment %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h4>{{ title }}</h4>
+    </div>
+    <div class="card-body">
+        <ul class="list-group list-group-flush">
+            {% for item in item_list %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a href="{% url 'course_detail' item.course.pk %}">{{ item.course.title }}</a>
+                </li>
+            {% empty %}
+                <li class="list-group-item">No courses to display.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.get_full_name }}'s Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h2>User Profile</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 text-center">
+                    {% if profile_user.photo %}
+                        <img src="{{ profile_user.photo.url }}" alt="{{ profile_user.get_full_name }}" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-secondary rounded-circle d-flex justify-content-center align-items-center" style="width: 150px; height: 150px;">
+                            <span class="text-white fs-1">{{ profile_user.username|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-9">
+                    <h3>{{ profile_user.get_full_name }}</h3>
+                    <p class="text-muted">@{{ profile_user.username }}</p>
+                    <p><strong>Role:</strong> {{ profile_user.get_role_display }}</p>
+                    <p><strong>Email:</strong> {{ profile_user.email }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            <h4>Status Updates</h4>
+        </div>
+        <div class="card-body">
+            {% for update in status_updates %}
+                <div class="alert alert-info">
+                    <p>{{ update.content }}</p>
+                    <small class="text-muted">Posted on {{ update.timestamp|date:"F d, Y, P" }}</small>
+                </div>
+            {% empty %}
+                <p>{{ profile_user.get_full_name }} has not posted any updates.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+{% endblock %}
