@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
-from .models import Course, Feedback, StatusUpdate, User
+from .models import User, Course, Feedback, StatusUpdate
 from .forms import FeedbackForm
 
 User = get_user_model()
@@ -11,13 +11,13 @@ User = get_user_model()
 class BaseAPIFixture(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        # FIX: Create users with 'first_name' and 'last_name', not the read-only 'real_name' property.
         cls.teacher = User.objects.create_user(
             username="teacher1", password="pass", role="teacher", first_name="Prof", last_name="T"
         )
         cls.student = User.objects.create_user(
             username="student1", password="pass", role="student", first_name="Ana", last_name="S"
         )
+        # FIX: Use 'title' to match the Course model.
         cls.course = Course.objects.create(
             title="Intro to Testing",
             description="Testing with DRF",
@@ -56,7 +56,6 @@ class StatusUpdateAPITests(BaseAPIFixture):
         self.login_student()
         url = reverse("statusupdate-list")
         self.client.post(url, {"content": "First"}, format="json")
-        # A small delay to ensure timestamps are different
         import time
         time.sleep(0.01)
         self.client.post(url, {"content": "Second"}, format="json")
@@ -67,7 +66,7 @@ class StatusUpdateAPITests(BaseAPIFixture):
 
 class FormTests(TestCase):
     def test_feedback_form_valid(self):
-        form_data = {'rating': 5, 'comment': 'This comment is definitely long enough.'}
+        form_data = {'rating': 5, 'comment': 'This is a perfectly valid and long comment.'}
         form = FeedbackForm(data=form_data)
         self.assertTrue(form.is_valid())
 
@@ -85,7 +84,7 @@ class ViewTests(TestCase):
 
     def test_student_cannot_access_create_course_view(self):
         self.client.login(username='teststudent', password='password')
-        response = self.client.get(reverse('core:create_course'))
+        response = self.client.get(reverse('create_course'))
         self.assertEqual(response.status_code, 403)
 
     def test_teacher_can_access_create_course_view(self):

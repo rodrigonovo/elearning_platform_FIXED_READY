@@ -3,7 +3,7 @@ from django.db import models
 
 class User(AbstractUser):
     ROLE_CHOICES = (('student', 'Student'), ('teacher', 'Teacher'))
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     photo = models.ImageField(upload_to='user_photos/', null=True, blank=True)
     
     @property
@@ -11,7 +11,8 @@ class User(AbstractUser):
         return self.get_full_name()
 
 class Course(models.Model):
-    title = models.CharField(max_length=200) # Correct field name
+    # This is the correct, final version of the Course model.
+    title = models.CharField(max_length=200)
     description = models.TextField()
     teacher = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -20,6 +21,7 @@ class Course(models.Model):
     def __str__(self):
         return self.title
 
+# ... (The rest of your models remain the same)
 class Enrollment(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
