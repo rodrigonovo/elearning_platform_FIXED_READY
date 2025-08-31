@@ -2,7 +2,6 @@ from django.contrib import admin
 from .models import User, Course, Enrollment, Feedback, StatusUpdate, Notification
 
 class CourseAdmin(admin.ModelAdmin):
-    # FIX: Uses 'title' to match the updated model.
     list_display = ('title', 'teacher', 'created_at')
     search_fields = ('title', 'teacher__username')
 

@@ -11,13 +11,14 @@ User = get_user_model()
 class BaseAPIFixture(APITestCase):
     @classmethod
     def setUpTestData(cls):
+        # FIX: Create users with 'first_name' and 'last_name', not the read-only 'real_name' property.
         cls.teacher = User.objects.create_user(
             username="teacher1", password="pass", role="teacher", first_name="Prof", last_name="T"
         )
         cls.student = User.objects.create_user(
             username="student1", password="pass", role="student", first_name="Ana", last_name="S"
         )
-        # FIX: Use 'title' to match the Course model.
+        # FIX: Use 'title' to match the updated Course model.
         cls.course = Course.objects.create(
             title="Intro to Testing",
             description="Testing with DRF",
@@ -40,6 +41,7 @@ class CourseAPITests(BaseAPIFixture):
     def test_teacher_can_create_course(self):
         self.login_teacher()
         url = reverse("course-list")
+        # FIX: Use 'title' in the payload to match the model.
         payload = {"title": "New Course", "description": "Created by teacher"}
         resp = self.client.post(url, payload, format="json")
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
@@ -57,7 +59,7 @@ class StatusUpdateAPITests(BaseAPIFixture):
         url = reverse("statusupdate-list")
         self.client.post(url, {"content": "First"}, format="json")
         import time
-        time.sleep(0.01)
+        time.sleep(0.01) # Small delay to ensure distinct timestamps
         self.client.post(url, {"content": "Second"}, format="json")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
@@ -66,7 +68,7 @@ class StatusUpdateAPITests(BaseAPIFixture):
 
 class FormTests(TestCase):
     def test_feedback_form_valid(self):
-        form_data = {'rating': 5, 'comment': 'This is a perfectly valid and long comment.'}
+        form_data = {'rating': 5, 'comment': 'This comment is definitely long enough.'}
         form = FeedbackForm(data=form_data)
         self.assertTrue(form.is_valid())
 

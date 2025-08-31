@@ -5,12 +5,11 @@ from django.contrib.auth.forms import UserCreationForm
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'role', 'password1', 'password2')
+        fields = ('username', 'email', 'first_name', 'last_name', 'role')
 
 class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
-        # FIX: Now correctly references the fields in the updated Course model.
         fields = ['title', 'description', 'course_material']
 
 class StatusUpdateForm(forms.ModelForm):
@@ -25,7 +24,7 @@ class FeedbackForm(forms.ModelForm):
     class Meta:
         model = Feedback
         fields = ['rating', 'comment']
-                                                            
+
     def clean_comment(self):
         comment = self.cleaned_data.get('comment')
         if len(comment) < 10:

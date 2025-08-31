@@ -11,7 +11,6 @@ class User(AbstractUser):
         return self.get_full_name()
 
 class Course(models.Model):
-    # This is the correct, final version of the Course model.
     title = models.CharField(max_length=200)
     description = models.TextField()
     teacher = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -21,7 +20,7 @@ class Course(models.Model):
     def __str__(self):
         return self.title
 
-# ... (The rest of your models remain the same)
+# ... (rest of models)
 class Enrollment(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)

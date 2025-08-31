@@ -10,7 +10,6 @@ class CourseSerializer(serializers.ModelSerializer):
     teacher = UserPublicSerializer(read_only=True)
     class Meta:
         model = Course
-        # FIX: Uses 'title' to match the updated model.
         fields = ['id', 'title', 'description', 'teacher', 'created_at', 'course_material']
 
 class EnrollmentSerializer(serializers.ModelSerializer):
