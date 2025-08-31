@@ -27,6 +27,16 @@ def teacher_is_course_owner(view_func):
             raise PermissionDenied
         return view_func(request, *args, **kwargs)
     return _wrapped_view
+    
+def teacher_is_course_owner_by_id(view_func):
+    """Decorator to check if the current user is the teacher of a course, using course_id."""
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        course = get_object_or_404(Course, pk=kwargs['course_id'])
+        if not request.user.is_authenticated or request.user != course.teacher:
+            raise PermissionDenied
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
 def user_is_owner(view_func):
     @wraps(view_func)

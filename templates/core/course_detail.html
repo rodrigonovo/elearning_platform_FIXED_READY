@@ -13,17 +13,20 @@
             
             {% if user.is_authenticated and user == course.teacher %}
                 <a href="{% url 'core:edit_course' pk=course.id %}" class="btn btn-primary mb-4">Edit Course</a>
+                <a href="{% url 'core:add_course_material' course_id=course.id %}" class="btn btn-success mb-4">Add Material</a>
             {% endif %}
 
             {% if user.is_authenticated and user.role == 'student' and is_enrolled %}
                 <h2>Course Materials</h2>
-                {% if course.course_material %}
+                {% if course_materials %}
                     <ul class="list-group mb-4">
-                        <li class="list-group-item">
-                            <a href="{{ course.course_material.url }}" target="_blank">
-                                {{ course.course_material.name|split:'/'|last }}
-                            </a>
-                        </li>
+                        {% for material in course_materials %}
+                            <li class="list-group-item">
+                                <a href="{{ material.file.url }}" target="_blank">
+                                    {{ material.file.name|split:'/'|last }}
+                                </a>
+                            </li>
+                        {% endfor %}
                     </ul>
                 {% else %}
                     <p class="text-muted">No materials have been added to this course yet.</p>

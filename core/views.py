@@ -5,12 +5,11 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
 from django.contrib import messages
-
-from .forms import CustomUserCreationForm, CourseForm, FeedbackForm, StatusUpdateForm, ProfileUpdateForm
-from .models import User, Course, Enrollment, Feedback, StatusUpdate
-from .decorators import teacher_required, student_required, user_is_owner, teacher_is_course_owner
-
 from django.db.models import Q # Import Q for complex lookups
+
+from .forms import CustomUserCreationForm, CourseForm, FeedbackForm, StatusUpdateForm, ProfileUpdateForm, CourseMaterialForm
+from .models import User, Course, Enrollment, Feedback, StatusUpdate, CourseMaterial
+from .decorators import teacher_required, student_required, user_is_owner, teacher_is_course_owner, teacher_is_course_owner_by_id
 
 
 def home_view(request):
@@ -106,6 +105,8 @@ class CourseDetailView(DetailView):
         course = context['course']
         user = self.request.user
         
+        context['course_materials'] = course.course_materials.all()
+        
         if user.is_authenticated:
             is_enrolled = course.enrollment_set.filter(student=user).exists()
             context['is_enrolled'] = is_enrolled
@@ -116,7 +117,6 @@ class CourseDetailView(DetailView):
         
         return context
 
-
 @method_decorator(login_required, name='dispatch')
 @method_decorator(teacher_required, name='dispatch')
 class CourseCreateView(CreateView):
@@ -126,13 +126,27 @@ class CourseCreateView(CreateView):
     success_url = reverse_lazy('core:course_list')
 
     def form_valid(self, form):
-        """
-        If the form is valid, save the associated model and add a success message.
-        """
         form.instance.teacher = self.request.user
         messages.success(self.request, f'Course "{form.instance.title}" created successfully!')
         return super().form_valid(form)
 
+
+@login_required
+@teacher_is_course_owner_by_id
+def add_course_material_view(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    if request.method == 'POST':
+        form = CourseMaterialForm(request.POST, request.FILES)
+        if form.is_valid():
+            material = form.save(commit=False)
+            material.course = course
+            material.save()
+            messages.success(request, f"New material '{material.file.name.split('/')[-1]}' added to course.")
+            return redirect('core:course_detail', pk=course.id)
+    else:
+        form = CourseMaterialForm()
+    
+    return render(request, 'core/add_material.html', {'form': form, 'course': course})
 
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_is_owner, name='dispatch')

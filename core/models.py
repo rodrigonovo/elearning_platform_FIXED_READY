@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class User(AbstractUser):
     ROLE_CHOICES = (('student', 'Student'), ('teacher', 'Teacher'))
@@ -15,12 +16,18 @@ class Course(models.Model):
     description = models.TextField()
     teacher = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    course_material = models.FileField(upload_to='course_materials/', null=True, blank=True)
 
     def __str__(self):
         return self.title
 
-# ... (rest of models)
+class CourseMaterial(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='course_materials')
+    file = models.FileField(upload_to='course_materials/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.file.name.split("/")[-1]} for {self.course.title}'
+
 class Enrollment(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)

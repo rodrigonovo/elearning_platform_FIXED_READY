@@ -1,6 +1,6 @@
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import Enrollment, Course, Notification
+from .models import Enrollment, Course, Notification, CourseMaterial
 
 @receiver(post_save, sender=Enrollment)
 def notify_teacher_on_enroll(sender, instance, created, **kwargs):
@@ -8,15 +8,9 @@ def notify_teacher_on_enroll(sender, instance, created, **kwargs):
         msg = f"{instance.student.username} enrolled on {instance.course.title}"
         Notification.objects.create(user=instance.course.teacher, message=msg)
 
-@receiver(pre_save, sender=Course)
-def detect_materials_update(sender, instance, **kwargs):
-    if not instance.pk:
-        return
-    try:
-        old = Course.objects.get(pk=instance.pk)
-    except Course.DoesNotExist:
-        return
-    if old.course_material != instance.course_material and instance.course_material:
-        # materials file changed/added
-        for enr in instance.enrollments.select_related("student").all():
-            Notification.objects.create(user=enr.student, message=f"New material in {instance.title}")
+@receiver(post_save, sender=CourseMaterial)
+def notify_students_on_new_material(sender, instance, created, **kwargs):
+    if created:
+        course = instance.course
+        for enr in course.enrollment_set.select_related("student").all():
+            Notification.objects.create(user=enr.student, message=f"New material in {course.title}")
