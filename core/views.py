@@ -10,6 +10,8 @@ from .forms import CustomUserCreationForm, CourseForm, FeedbackForm, StatusUpdat
 from .models import User, Course, Enrollment, Feedback, StatusUpdate
 from .decorators import teacher_required, student_required, user_is_owner, teacher_is_course_owner
 
+from django.db.models import Q # Import Q for complex lookups
+
 
 def home_view(request):
     """
@@ -246,3 +248,19 @@ def user_profile_view(request, username):
         'status_updates': status_updates,
         'form': form
     })
+
+def search_users_view(request):
+    """
+    Handles user search functionality, accessible to all users.
+    
+    Searches for users by username or real name based on a 'q' query parameter.
+    """
+    query = request.GET.get('q', '')
+    results = []
+    
+    if query:
+        results = User.objects.filter(
+            Q(username__icontains=query) | Q(first_name__icontains=query) | Q(last_name__icontains=query)
+        ).order_by('username')
+        
+    return render(request, 'core/search_users.html', {'query': query, 'results': results})

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Search Users{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Find Users</h1>
+    
+    <form method="get" action="{% url 'core:search_users' %}" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Search by username, first name or last name..." value="{{ query }}">
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="submit">Search</button>
+            </div>
+        </div>
+    </form>
+
+    {% if results %}
+        <h3>Search Results</h3>
+        <div class="list-group">
+            {% for user_profile in results %}
+                <a href="{% url 'core:user_profile' username=user_profile.username %}" class="list-group-item list-group-item-action">
+                    {{ user_profile.get_full_name|default:user_profile.username }}
+                    <span class="text-muted small">({{ user_profile.role|capfirst }})</span>
+                </a>
+            {% endfor %}
+        </div>
+    {% elif query %}
+        <p>No users found matching "{{ query }}".</p>
+    {% endif %}
+</div>
+{% endblock %}
