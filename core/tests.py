@@ -1,24 +1,22 @@
 from django.test import TestCase
-from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 from rest_framework import status
-from .models import User, Course, Feedback, StatusUpdate
-from .forms import FeedbackForm
+from .models import Course, StatusUpdate, Enrollment, Feedback
+from .forms import StatusUpdateForm, FeedbackForm
 
 User = get_user_model()
 
 class BaseAPIFixture(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        # FIX: Create users with 'first_name' and 'last_name', not the read-only 'real_name' property.
         cls.teacher = User.objects.create_user(
             username="teacher1", password="pass", role="teacher", first_name="Prof", last_name="T"
         )
         cls.student = User.objects.create_user(
             username="student1", password="pass", role="student", first_name="Ana", last_name="S"
         )
-        # FIX: Use 'title' to match the updated Course model.
         cls.course = Course.objects.create(
             title="Intro to Testing",
             description="Testing with DRF",
@@ -41,7 +39,6 @@ class CourseAPITests(BaseAPIFixture):
     def test_teacher_can_create_course(self):
         self.login_teacher()
         url = reverse("course-list")
-        # FIX: Use 'title' in the payload to match the model.
         payload = {"title": "New Course", "description": "Created by teacher"}
         resp = self.client.post(url, payload, format="json")
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
@@ -86,10 +83,10 @@ class ViewTests(TestCase):
 
     def test_student_cannot_access_create_course_view(self):
         self.client.login(username='teststudent', password='password')
-        response = self.client.get(reverse('create_course'))
+        response = self.client.get(reverse('core:create_course'))
         self.assertEqual(response.status_code, 403)
 
     def test_teacher_can_access_create_course_view(self):
         self.client.login(username='testteacher', password='password')
-        response = self.client.get(reverse('create_course'))
+        response = self.client.get(reverse('core:create_course'))
         self.assertEqual(response.status_code, 200)
