@@ -6,6 +6,7 @@
         <div class="col-12">
             <h1>Teacher Dashboard</h1>
             <p>Welcome, {{ user.get_full_name }} ({{ user.username }}).</p>
+            <a href="{% url 'core:user_profile' username=user.username %}" class="btn btn-info mt-2">View My Profile</a>
             <hr>
         </div>
     </div>
