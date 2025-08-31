@@ -7,8 +7,4 @@
 /elearning_platform/*.pyc
 /elearning_platform/*.pyo
 /elearning_platform/*.pyd
-core/__pycache__/tests.cpython-312.pyc
-core/__pycache__/api.cpython-312.pyc
-core/__pycache__/serializers.cpython-312.pyc
-core/__pycache__/tests.cpython-312.pyc
-core/__pycache__/views.cpython-312.pyc
+core/__pycache__

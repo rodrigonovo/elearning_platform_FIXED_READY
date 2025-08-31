@@ -1,6 +1,6 @@
 # core/api.py
 
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, permissions, filters, exceptions
 from rest_framework.permissions import IsAuthenticated
 from .models import User, Course, Enrollment, Feedback, StatusUpdate
 from .serializers import (
@@ -8,53 +8,33 @@ from .serializers import (
     FeedbackSerializer, StatusUpdateSerializer
 )
 
-# Refactoring Mixin
-class UserFieldMixin:
-    """
-    A mixin that sets a specific field on a model instance to the request.user
-    during object creation. The viewset using this mixin must define a
-    `user_field_on_create` attribute specifying the name of the field.
-    e.g., user_field_on_create = 'student'
-    """
-    user_field_on_create = None
-
-    def perform_create(self, serializer):
-        """
-        Overrides the default perform_create to inject the request.user.
-        """
-        if self.user_field_on_create:
-            serializer.save(**{self.user_field_on_create: self.request.user})
-        else:
-            # Fallback to the default DRF behavior if the field name is not specified.
-            super().perform_create(serializer)
-
-
 # Custom Permissions
 class IsTeacher(permissions.BasePermission):
     """
-    Allows access only to authenticated users with the 'teacher' role.
+    Custom permission to only allow users with the 'teacher' role to access an endpoint.
     """
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role == 'teacher'
 
 class IsStudent(permissions.BasePermission):
     """
-    Allows access only to authenticated users with the 'student' role.
+    Custom permission to only allow users with the 'student' role to access an endpoint.
     """
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role == 'student'
 
 class IsEnrolledStudent(permissions.BasePermission):
     """
-    Custom permission to only allow enrolled students to perform an action.
-    This permission assumes IsAuthenticated has already been checked.
+    Custom permission to only allow students enrolled in a course to perform an action.
+    This permission is primarily used to check if a student can create feedback.
+    It assumes that the user has already been authenticated.
     """
     def has_permission(self, request, view):
-        # This permission can now safely assume the user is authenticated,
-        # as the global exception handler will correctly manage unauthenticated users.
-        if request.user.role != 'student':
+        # Safely check for the 'role' attribute to prevent errors with anonymous users.
+        if getattr(request.user, 'role', None) != 'student':
             return False
 
+        # For the 'create' action, check if the student is actively enrolled.
         if view.action == 'create':
             course_id = request.data.get('course')
             if not course_id:
@@ -65,12 +45,17 @@ class IsEnrolledStudent(permissions.BasePermission):
                 is_blocked=False
             ).exists()
         
+        # Allow other actions (like list or retrieve) for any student.
         return True
 
 # ViewSets
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    API endpoint that allows users to be viewed.
+    A read-only API endpoint for viewing Users.
+    
+    Provides `list` and `retrieve` actions.
+    Supports searching by `username`, `first_name`, and `last_name`.
+    Access is restricted to authenticated users.
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -78,19 +63,22 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ['username', 'first_name', 'last_name']
 
-class CourseViewSet(UserFieldMixin, viewsets.ModelViewSet):
+class CourseViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows courses to be viewed or edited.
-    Teachers can create/edit/delete courses.
-    Students can only view courses.
+    A full CRUD API endpoint for managing Courses.
+    
+    - **List & Retrieve:** All authenticated users can view courses.
+    - **Create, Update, Delete:** Only authenticated 'teacher' users can create or modify courses.
+    
+    When a teacher creates a course, they are automatically assigned as the course teacher.
     """
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    user_field_on_create = 'teacher'  # Use mixin for perform_create
 
     def get_permissions(self):
         """
-        Instantiates and returns the list of permissions that this view requires.
+        Dynamically set permissions based on the requested action.
+        Write actions are restricted to teachers.
         """
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             self.permission_classes = [IsTeacher]
@@ -98,29 +86,60 @@ class CourseViewSet(UserFieldMixin, viewsets.ModelViewSet):
             self.permission_classes = [IsAuthenticated]
         return super().get_permissions()
 
-class EnrollmentViewSet(UserFieldMixin, viewsets.ModelViewSet):
+    def perform_create(self, serializer):
+        """
+        Set the teacher of the course to the currently logged-in user.
+        """
+        serializer.save(teacher=self.request.user)
+
+class EnrollmentViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows enrollments to be viewed or created.
+    API endpoint for managing course Enrollments.
+    
+    Only 'student' users can interact with this endpoint. When a student
+    creates an enrollment, they are automatically assigned as the enrollee.
     """
     queryset = Enrollment.objects.all()
     serializer_class = EnrollmentSerializer
     permission_classes = [IsStudent]
-    user_field_on_create = 'student'  # Use mixin for perform_create
 
-class FeedbackViewSet(UserFieldMixin, viewsets.ModelViewSet):
+    def perform_create(self, serializer):
+        """
+        Set the student for the enrollment to the currently logged-in user.
+        """
+        serializer.save(student=self.request.user)
+
+class FeedbackViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows feedback to be created by enrolled students.
+    API endpoint for managing course Feedback.
+    
+    - **Create:** Only authenticated 'student' users who are enrolled in the
+      specified course can create feedback.
+    - **List & Retrieve:** All authenticated users can view feedback.
     """
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
     permission_classes = [permissions.IsAuthenticated, IsEnrolledStudent]
-    user_field_on_create = 'student'  # Use mixin for perform_create
 
-class StatusUpdateViewSet(UserFieldMixin, viewsets.ModelViewSet):
+    def perform_create(self, serializer):
+        """
+        Set the student for the feedback to the currently logged-in user.
+        """
+        serializer.save(student=self.request.user)
+
+class StatusUpdateViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows users to create and view status updates.
+    API endpoint for users to post and view Status Updates.
+    
+    All authenticated users can create and view status updates. The user who
+    creates the update is automatically assigned.
     """
     queryset = StatusUpdate.objects.order_by('-created_at')
     serializer_class = StatusUpdateSerializer
     permission_classes = [IsAuthenticated]
-    user_field_on_create = 'user'  # Use mixin for perform_create
+
+    def perform_create(self, serializer):
+        """
+        Set the user for the status update to the currently logged-in user.
+        """
+        serializer.save(user=self.request.user)
