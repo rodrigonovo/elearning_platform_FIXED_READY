@@ -1,1 +1,9 @@
 /.venv
+/core/__pycache__/
+/core/*.pyc
+/core/*.pyo
+/core/*.pyd
+/elearning_platform/__pycache__/
+/elearning_platform/*.pyc
+/elearning_platform/*.pyo
+/elearning_platform/*.pyd
