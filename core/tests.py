@@ -108,13 +108,15 @@ class ViewTests(TestCase):
         """Set up non-modified objects used by all test methods."""
         cls.teacher = User.objects.create_user(username='testteacher', password='password', role='teacher')
         cls.student = User.objects.create_user(username='teststudent', password='password', role='student')
+        cls.course = Course.objects.create(title='Test Course', teacher=cls.teacher)
+        cls.enrollment = Enrollment.objects.create(student=cls.student, course=cls.course)
 
     def test_student_cannot_access_create_course_view(self):
-        """Ensure students are redirected from the 'create course' page."""
+        """Ensure students are forbidden from the 'create course' page."""
         self.client.login(username='teststudent', password='password')
         response = self.client.get(reverse('core:create_course'))
-        self.assertEqual(response.status_code, 302)
-
+        self.assertEqual(response.status_code, 403)
+    
     def test_teacher_can_access_create_course_view(self):
         """Ensure teachers can access the 'create course' page."""
         self.client.login(username='testteacher', password='password')
@@ -127,7 +129,7 @@ class EnrollmentViewTests(BaseAPIFixture):
         """Ensure a student can enroll in a course."""
         self.login_student()
         url = reverse('core:enroll_in_course', kwargs={'course_id': self.course.id})
-        response = self.client.post(url)
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Enrollment.objects.filter(student=self.student, course=self.course).exists())
 
@@ -137,15 +139,15 @@ class EnrollmentViewTests(BaseAPIFixture):
         self.assertEqual(Enrollment.objects.count(), 1)
         self.login_student()
         url = reverse('core:enroll_in_course', kwargs={'course_id': self.course.id})
-        self.client.post(url)
+        self.client.get(url)
         self.assertEqual(Enrollment.objects.count(), 1)
 
     def test_teacher_cannot_enroll_in_course(self):
         """Ensure a teacher cannot enroll in a course as a student."""
         self.login_teacher()
         url = reverse('core:enroll_in_course', kwargs={'course_id': self.course.id})
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 302)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
         self.assertFalse(Enrollment.objects.filter(student=self.teacher, course=self.course).exists())
 
 class FeedbackAPITests(BaseAPIFixture):
@@ -174,3 +176,29 @@ class FeedbackAPITests(BaseAPIFixture):
         data = {'course': self.course.id, 'rating': 5, 'comment': 'Anonymous feedback.'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+class BlockStudentViewTests(BaseAPIFixture):
+    """Tests for the teacher's block/unblock student functionality."""
+    def test_teacher_can_block_and_unblock_student(self):
+        """Ensure a teacher can block and unblock a student."""
+        self.login_teacher()
+        Enrollment.objects.create(student=self.student, course=self.course)
+        
+        # Block the student
+        url_block = reverse('core:block_student', kwargs={'course_id': self.course.id, 'student_id': self.student.id})
+        response_block = self.client.get(url_block)
+        self.assertEqual(response_block.status_code, 302)
+        self.assertTrue(Enrollment.objects.get(student=self.student, course=self.course).is_blocked)
+        
+        # Unblock the student
+        response_unblock = self.client.get(url_block)
+        self.assertEqual(response_unblock.status_code, 302)
+        self.assertFalse(Enrollment.objects.get(student=self.student, course=self.course).is_blocked)
+
+    def test_non_teacher_cannot_block_student(self):
+        """Ensure a non-teacher user cannot block a student."""
+        self.login_student()
+        url = reverse('core:block_student', kwargs={'course_id': self.course.id, 'student_id': self.other_student.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(Enrollment.objects.filter(student=self.other_student).exists())

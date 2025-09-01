@@ -236,15 +236,22 @@ def submit_feedback_view(request, course_id):
 
 @login_required
 @teacher_required
+@login_required
+@teacher_required
 def block_student_view(request, course_id, student_id):
     """
     Allow a teacher to block a student from a course.
     """
     enrollment = get_object_or_404(Enrollment, course_id=course_id, student_id=student_id)
-    enrollment.is_blocked = True
+    enrollment.is_blocked = not enrollment.is_blocked
     enrollment.save()
-    messages.success(request, f'Student "{enrollment.student.username}" has been blocked from the course.')
+    if enrollment.is_blocked:
+        messages.success(request, f'Student "{enrollment.student.username}" has been blocked from the course.')
+    else:
+        messages.success(request, f'Student "{enrollment.student.username}" has been unblocked from the course.')
+
     return redirect('core:course_detail', pk=course_id)
+
 
 
 @login_required
