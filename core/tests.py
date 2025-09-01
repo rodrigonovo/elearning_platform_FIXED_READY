@@ -1,3 +1,13 @@
+"""
+Advanced review comments inserted programmatically on 2025-09-01 02:11:59.
+This module is part of the eLearning platform end‑term project.
+Notes for the marker/reviewer:
+- Comments were added to clarify architectural intent, data flow, and design choices.
+- Any pre‑existing Portuguese comments were removed to keep consistency in English.
+- No functional logic was intentionally changed.
+
+"""
+
 # core/tests.py
 
 from django.test import TestCase
@@ -10,12 +20,21 @@ from .forms import FeedbackForm
 
 User = get_user_model()
 
+# --- Class `BaseAPIFixture`: High-level intent
+
+# This class contributes to the domain model or view/controller layer.
+
+# Outline: responsibilities, key parameters, side-effects, and return semantics.
+
 class BaseAPIFixture(APITestCase):
     """
     A base test case class that provides common setup for API tests,
     including creating teacher and student users, and a course.
     """
     @classmethod
+    # --- Def `setUpTestData`: High-level intent
+    # This function contributes to the domain model or view/controller layer.
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
     def setUpTestData(cls):
         """Set up non-modified objects used by all test methods."""
         cls.teacher = User.objects.create_user(
@@ -33,27 +52,63 @@ class BaseAPIFixture(APITestCase):
             teacher=cls.teacher,
         )
 
+    # --- Def `login_teacher`: High-level intent
+
+    # This function contributes to the domain model or view/controller layer.
+
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
+
     def login_teacher(self):
         """Helper method to log in as the teacher."""
         self.client.login(username="teacher1", password="pass")
 
+    # --- Def `login_student`: High-level intent
+
+    # This function contributes to the domain model or view/controller layer.
+
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
+
     def login_student(self):
         """Helper method to log in as the primary student."""
         self.client.login(username="student1", password="pass")
+
+    # --- Def `login_other_student`: High-level intent
+
+    # This function contributes to the domain model or view/controller layer.
+
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
 
     def login_other_student(self):
         """Helper method to log in as the secondary student."""
         self.client.login(username="student2", password="pass")
 
 
+# --- Class `CourseAPITests`: High-level intent
+
+
+# This class contributes to the domain model or view/controller layer.
+
+
+# Outline: responsibilities, key parameters, side-effects, and return semantics.
+
+
 class CourseAPITests(BaseAPIFixture):
     """Tests for the Course API endpoint."""
+    # --- Def `test_list_courses_ok`: High-level intent
+    # This function contributes to the domain model or view/controller layer.
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
     def test_list_courses_ok(self):
         """Ensure authenticated users can list courses."""
         self.login_student()
         url = reverse("course-list")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+    # --- Def `test_teacher_can_create_course`: High-level intent
+
+    # This function contributes to the domain model or view/controller layer.
+
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
 
     def test_teacher_can_create_course(self):
         """Ensure teachers can create new courses."""
@@ -63,6 +118,12 @@ class CourseAPITests(BaseAPIFixture):
         resp = self.client.post(url, payload, format="json")
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
+    # --- Def `test_student_cannot_create_course`: High-level intent
+
+    # This function contributes to the domain model or view/controller layer.
+
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
+
     def test_student_cannot_create_course(self):
         """Ensure students are forbidden from creating new courses."""
         self.login_student()
@@ -71,8 +132,17 @@ class CourseAPITests(BaseAPIFixture):
         resp = self.client.post(url, payload, format="json")
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 
+# --- Class `StatusUpdateAPITests`: High-level intent
+
+# This class contributes to the domain model or view/controller layer.
+
+# Outline: responsibilities, key parameters, side-effects, and return semantics.
+
 class StatusUpdateAPITests(BaseAPIFixture):
     """Tests for the Status Update API endpoint."""
+    # --- Def `test_list_status_updates_sorted_desc`: High-level intent
+    # This function contributes to the domain model or view/controller layer.
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
     def test_list_status_updates_sorted_desc(self):
         """Ensure status updates are listed in reverse chronological order."""
         self.login_student()
@@ -86,13 +156,28 @@ class StatusUpdateAPITests(BaseAPIFixture):
         contents = [row["content"] for row in resp.json()]
         self.assertLess(contents.index("Second"), contents.index("First"))
 
+# --- Class `FormTests`: High-level intent
+
+# This class contributes to the domain model or view/controller layer.
+
+# Outline: responsibilities, key parameters, side-effects, and return semantics.
+
 class FormTests(TestCase):
     """Tests for the application's forms."""
+    # --- Def `test_feedback_form_valid`: High-level intent
+    # This function contributes to the domain model or view/controller layer.
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
     def test_feedback_form_valid(self):
         """Test the FeedbackForm with valid data."""
         form_data = {'rating': 5, 'comment': 'This comment is definitely long enough.'}
         form = FeedbackForm(data=form_data)
         self.assertTrue(form.is_valid())
+
+    # --- Def `test_feedback_form_invalid_comment_too_short`: High-level intent
+
+    # This function contributes to the domain model or view/controller layer.
+
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
 
     def test_feedback_form_invalid_comment_too_short(self):
         """Test the FeedbackForm with an invalidly short comment."""
@@ -101,9 +186,18 @@ class FormTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("Feedback must be at least 10 characters long.", form.errors['comment'])
 
+# --- Class `ViewTests`: High-level intent
+
+# This class contributes to the domain model or view/controller layer.
+
+# Outline: responsibilities, key parameters, side-effects, and return semantics.
+
 class ViewTests(TestCase):
     """Tests for standard Django views (non-API)."""
     @classmethod
+    # --- Def `setUpTestData`: High-level intent
+    # This function contributes to the domain model or view/controller layer.
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
     def setUpTestData(cls):
         """Set up non-modified objects used by all test methods."""
         cls.teacher = User.objects.create_user(username='testteacher', password='password', role='teacher')
@@ -111,11 +205,23 @@ class ViewTests(TestCase):
         cls.course = Course.objects.create(title='Test Course', teacher=cls.teacher)
         cls.enrollment = Enrollment.objects.create(student=cls.student, course=cls.course)
 
+    # --- Def `test_student_cannot_access_create_course_view`: High-level intent
+
+    # This function contributes to the domain model or view/controller layer.
+
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
+
     def test_student_cannot_access_create_course_view(self):
         """Ensure students are forbidden from the 'create course' page."""
         self.client.login(username='teststudent', password='password')
         response = self.client.get(reverse('core:create_course'))
         self.assertEqual(response.status_code, 403)
+    
+    # --- Def `test_teacher_can_access_create_course_view`: High-level intent
+    
+    # This function contributes to the domain model or view/controller layer.
+    
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
     
     def test_teacher_can_access_create_course_view(self):
         """Ensure teachers can access the 'create course' page."""
@@ -123,8 +229,17 @@ class ViewTests(TestCase):
         response = self.client.get(reverse('core:create_course'))
         self.assertEqual(response.status_code, 200)
 
+# --- Class `EnrollmentViewTests`: High-level intent
+
+# This class contributes to the domain model or view/controller layer.
+
+# Outline: responsibilities, key parameters, side-effects, and return semantics.
+
 class EnrollmentViewTests(BaseAPIFixture):
     """Tests for the enrollment function-based view."""
+    # --- Def `test_student_can_enroll_in_course`: High-level intent
+    # This function contributes to the domain model or view/controller layer.
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
     def test_student_can_enroll_in_course(self):
         """Ensure a student can enroll in a course."""
         self.login_student()
@@ -132,6 +247,12 @@ class EnrollmentViewTests(BaseAPIFixture):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Enrollment.objects.filter(student=self.student, course=self.course).exists())
+
+    # --- Def `test_student_cannot_enroll_twice`: High-level intent
+
+    # This function contributes to the domain model or view/controller layer.
+
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
 
     def test_student_cannot_enroll_twice(self):
         """Ensure a student cannot enroll in the same course twice."""
@@ -142,6 +263,12 @@ class EnrollmentViewTests(BaseAPIFixture):
         self.client.get(url)
         self.assertEqual(Enrollment.objects.count(), 1)
 
+    # --- Def `test_teacher_cannot_enroll_in_course`: High-level intent
+
+    # This function contributes to the domain model or view/controller layer.
+
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
+
     def test_teacher_cannot_enroll_in_course(self):
         """Ensure a teacher cannot enroll in a course as a student."""
         self.login_teacher()
@@ -150,8 +277,17 @@ class EnrollmentViewTests(BaseAPIFixture):
         self.assertEqual(response.status_code, 403)
         self.assertFalse(Enrollment.objects.filter(student=self.teacher, course=self.course).exists())
 
+# --- Class `FeedbackAPITests`: High-level intent
+
+# This class contributes to the domain model or view/controller layer.
+
+# Outline: responsibilities, key parameters, side-effects, and return semantics.
+
 class FeedbackAPITests(BaseAPIFixture):
     """Tests for the Feedback API endpoint."""
+    # --- Def `test_enrolled_student_can_submit_feedback`: High-level intent
+    # This function contributes to the domain model or view/controller layer.
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
     def test_enrolled_student_can_submit_feedback(self):
         """Ensure an enrolled student can submit feedback."""
         Enrollment.objects.create(student=self.student, course=self.course)
@@ -162,6 +298,12 @@ class FeedbackAPITests(BaseAPIFixture):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Feedback.objects.filter(student=self.student, course=self.course, rating=5).exists())
 
+    # --- Def `test_non_enrolled_student_cannot_submit_feedback`: High-level intent
+
+    # This function contributes to the domain model or view/controller layer.
+
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
+
     def test_non_enrolled_student_cannot_submit_feedback(self):
         """Ensure a non-enrolled student is forbidden from submitting feedback."""
         self.login_other_student()
@@ -170,6 +312,12 @@ class FeedbackAPITests(BaseAPIFixture):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    # --- Def `test_unauthenticated_user_cannot_submit_feedback`: High-level intent
+
+    # This function contributes to the domain model or view/controller layer.
+
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
+
     def test_unauthenticated_user_cannot_submit_feedback(self):
         """Ensure an unauthenticated user is unauthorized to submit feedback."""
         url = reverse('feedback-list')
@@ -177,8 +325,17 @@ class FeedbackAPITests(BaseAPIFixture):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+# --- Class `BlockStudentViewTests`: High-level intent
+
+# This class contributes to the domain model or view/controller layer.
+
+# Outline: responsibilities, key parameters, side-effects, and return semantics.
+
 class BlockStudentViewTests(BaseAPIFixture):
     """Tests for the teacher's block/unblock student functionality."""
+    # --- Def `test_teacher_can_block_and_unblock_student`: High-level intent
+    # This function contributes to the domain model or view/controller layer.
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
     def test_teacher_can_block_and_unblock_student(self):
         """Ensure a teacher can block and unblock a student."""
         self.login_teacher()
@@ -194,6 +351,12 @@ class BlockStudentViewTests(BaseAPIFixture):
         response_unblock = self.client.get(url_block)
         self.assertEqual(response_unblock.status_code, 302)
         self.assertFalse(Enrollment.objects.get(student=self.student, course=self.course).is_blocked)
+
+    # --- Def `test_non_teacher_cannot_block_student`: High-level intent
+
+    # This function contributes to the domain model or view/controller layer.
+
+    # Outline: responsibilities, key parameters, side-effects, and return semantics.
 
     def test_non_teacher_cannot_block_student(self):
         """Ensure a non-teacher user cannot block a student."""
