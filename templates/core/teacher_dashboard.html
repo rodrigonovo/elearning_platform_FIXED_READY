@@ -31,8 +31,19 @@
         
         <div class="col-md-6">
             <h2>Notifications</h2>
-            {% comment %} This section would display notifications for the teacher {% endcomment %}
-            <p class="text-muted">No new notifications.</p>
+            {% if notifications %}
+                <div class="list-group">
+                    {% for notification in notifications %}
+                        <div class="list-group-item">
+                            {{ notification.message }}
+                            <small class="text-muted d-block">{{ notification.created_at|timesince }} ago</small>
+                            <a href="{% url 'core:mark_notification_as_read' notification.id %}" class="btn btn-sm btn-outline-secondary mt-2">Mark as read</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">No new notifications.</p>
+            {% endif %}
         </div>
     </div>
 </div>

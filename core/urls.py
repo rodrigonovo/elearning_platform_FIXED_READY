@@ -18,6 +18,7 @@ urlpatterns = [
     path('courses/<int:course_id>/block/<int:student_id>/', views.block_student_view, name='block_student'),
 
     path('courses/<int:course_id>/add-material/', views.add_course_material_view, name='add_course_material'),
+    path('courses/<int:course_id>/delete-material/<int:material_id>/', views.delete_course_material_view, name='delete_course_material'),
     path('courses/<int:pk>/', views.CourseDetailView.as_view(), name='course_detail'),
     
     # Profile views
@@ -33,5 +34,8 @@ urlpatterns = [
     # New URL for searching users
     path('search-users/', views.search_users_view, name='search_users'),
     path('profile/<str:username>/', views.user_profile_view, name='user_profile'),
+
+    path('mark-notification-as-read/<int:notification_id>/', views.mark_notification_as_read, name='mark_notification_as_read'),
+
  
 ]

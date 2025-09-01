@@ -5,10 +5,10 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
 from django.contrib import messages
-from django.db.models import Q # Import Q for complex lookups
+from django.db.models import Q 
 
 from .forms import CustomUserCreationForm, CourseForm, FeedbackForm, StatusUpdateForm, ProfileUpdateForm, CourseMaterialForm
-from .models import User, Course, Enrollment, Feedback, StatusUpdate, CourseMaterial
+from .models import User, Course, Enrollment, Feedback, StatusUpdate, CourseMaterial, Notification
 from .decorators import teacher_required, student_required, user_is_owner, teacher_is_course_owner, teacher_is_course_owner_by_id
 
 
@@ -56,38 +56,35 @@ def dashboard_view(request):
 @teacher_required
 def teacher_dashboard_view(request):
     """
-    Display the dashboard for teacher users.
+    Display the dashboard for teacher users with their courses and notifications.
     """
     courses = Course.objects.filter(teacher=request.user)
-    return render(request, 'core/teacher_dashboard.html', {'courses': courses})
-
+    notifications = Notification.objects.filter(user=request.user, is_read=False).order_by('-created_at')
+    context = {
+        'courses': courses,
+        'notifications': notifications
+    }
+    return render(request, 'core/teacher_dashboard.html', context)
 
 @login_required
 @student_required
 def student_dashboard_view(request):
-    """
-    Display the dashboard for student users.
-    
-    This view now also includes a form for posting status updates directly
-    from the dashboard.
-    """
-    # Get the student's enrollments to display.
     enrollments = Enrollment.objects.filter(student=request.user)
-    
-    # Get the student's past status updates.
-    status_updates = StatusUpdate.objects.filter(user=request.user).order_by('-created_at')
-
-    # Create an instance of the status update form.
-    form = StatusUpdateForm()
-    
-    # Define the context to pass to the template.
+    status_updates = StatusUpdate.objects.filter(user=request.user).order_by('-created_at')[:5]
+    notifications = Notification.objects.filter(user=request.user, is_read=False).order_by('-created_at') # New
     context = {
         'enrollments': enrollments,
         'status_updates': status_updates,
-        'form': form
+        'notifications': notifications # New
     }
-    
     return render(request, 'core/student_dashboard.html', context)
+
+    
+def mark_notification_as_read(request, notification_id):
+    notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+    notification.is_read = True
+    notification.save()
+    return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
 class CourseListView(ListView):
@@ -148,6 +145,18 @@ def add_course_material_view(request, course_id):
     
     return render(request, 'core/add_material.html', {'form': form, 'course': course})
 
+@login_required
+@teacher_is_course_owner_by_id
+def delete_course_material_view(request, course_id, material_id):
+    """
+    Allows a teacher to delete a course material file.
+    """
+    material = get_object_or_404(CourseMaterial, pk=material_id, course_id=course_id)
+    file_name = material.file.name.split('/')[-1]
+    material.delete()
+    messages.success(request, f"The material '{file_name}' was deleted.")
+    return redirect('core:course_detail', pk=course_id)
+
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_is_owner, name='dispatch')
 class ProfileUpdateView(UpdateView):
@@ -170,7 +179,7 @@ class ProfileUpdateView(UpdateView):
 
 
 @method_decorator(login_required, name='dispatch')
-@method_decorator(user_is_owner, name='dispatch')
+@method_decorator(teacher_is_course_owner, name='dispatch')
 class CourseUpdateView(UpdateView):
     model = Course
     form_class = CourseForm

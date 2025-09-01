@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
-{% block title %}Student Dashboard{% endblock %}
+{% load crispy_forms_tags %}
+
 {% block content %}
 <div class="container">
     <div class="row">
@@ -10,16 +11,29 @@
                 <a href="{% url 'core:user_profile' user.username %}" class="btn btn-secondary btn-sm">View Full Profile</a>
             </p>
             <hr>
-            
+
+            {% if notifications %}
+            <h4>Notifications</h4>
+            <div class="list-group mb-4">
+                {% for notification in notifications %}
+                <div class="list-group-item">
+                    {{ notification.message }}
+                    <small class="text-muted d-block">{{ notification.created_at|timesince }} ago</small>
+                    <a href="{% url 'core:mark_notification_as_read' notification.id %}" class="btn btn-sm btn-outline-secondary mt-2">Mark as read</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
             <h4>Post a New Status Update</h4>
             <form method="post" action="{% url 'core:user_profile' user.username %}">
                 {% csrf_token %}
-                {{ form.as_p }}
+                {{ form|crispy }}
                 <button type="submit" class="btn btn-primary">Post Status</button>
             </form>
             
             <hr>
-
+            
             <h4>My Recent Status Updates</h4>
             {% for update in status_updates|slice:":5" %}
                 <div class="card mb-2">

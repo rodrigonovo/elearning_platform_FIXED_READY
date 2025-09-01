@@ -1,0 +1,1159 @@
+openapi: 3.0.3
+info:
+  title: ''
+  version: 0.0.0
+paths:
+  /api/courses/:
+    get:
+      operationId: api_courses_list
+      description: |-
+        A full CRUD API endpoint for managing Courses.
+
+        - **List & Retrieve:** All authenticated users can view courses.
+        - **Create, Update, Delete:** Only authenticated 'teacher' users can create or modify courses.
+
+        When a teacher creates a course, they are automatically assigned as the course teacher.
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Course'
+          description: ''
+    post:
+      operationId: api_courses_create
+      description: |-
+        A full CRUD API endpoint for managing Courses.
+
+        - **List & Retrieve:** All authenticated users can view courses.
+        - **Create, Update, Delete:** Only authenticated 'teacher' users can create or modify courses.
+
+        When a teacher creates a course, they are automatically assigned as the course teacher.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Course'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Course'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Course'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          description: ''
+  /api/courses/{id}/:
+    get:
+      operationId: api_courses_retrieve
+      description: |-
+        A full CRUD API endpoint for managing Courses.
+
+        - **List & Retrieve:** All authenticated users can view courses.
+        - **Create, Update, Delete:** Only authenticated 'teacher' users can create or modify courses.
+
+        When a teacher creates a course, they are automatically assigned as the course teacher.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this course.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          description: ''
+    put:
+      operationId: api_courses_update
+      description: |-
+        A full CRUD API endpoint for managing Courses.
+
+        - **List & Retrieve:** All authenticated users can view courses.
+        - **Create, Update, Delete:** Only authenticated 'teacher' users can create or modify courses.
+
+        When a teacher creates a course, they are automatically assigned as the course teacher.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this course.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Course'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Course'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Course'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          description: ''
+    patch:
+      operationId: api_courses_partial_update
+      description: |-
+        A full CRUD API endpoint for managing Courses.
+
+        - **List & Retrieve:** All authenticated users can view courses.
+        - **Create, Update, Delete:** Only authenticated 'teacher' users can create or modify courses.
+
+        When a teacher creates a course, they are automatically assigned as the course teacher.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this course.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCourse'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCourse'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCourse'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          description: ''
+    delete:
+      operationId: api_courses_destroy
+      description: |-
+        A full CRUD API endpoint for managing Courses.
+
+        - **List & Retrieve:** All authenticated users can view courses.
+        - **Create, Update, Delete:** Only authenticated 'teacher' users can create or modify courses.
+
+        When a teacher creates a course, they are automatically assigned as the course teacher.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this course.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/enrollments/:
+    get:
+      operationId: api_enrollments_list
+      description: |-
+        API endpoint for managing course Enrollments.
+
+        Only 'student' users can interact with this endpoint. When a student
+        creates an enrollment, they are automatically assigned as the enrollee.
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Enrollment'
+          description: ''
+    post:
+      operationId: api_enrollments_create
+      description: |-
+        API endpoint for managing course Enrollments.
+
+        Only 'student' users can interact with this endpoint. When a student
+        creates an enrollment, they are automatically assigned as the enrollee.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Enrollment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Enrollment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Enrollment'
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Enrollment'
+          description: ''
+  /api/enrollments/{id}/:
+    get:
+      operationId: api_enrollments_retrieve
+      description: |-
+        API endpoint for managing course Enrollments.
+
+        Only 'student' users can interact with this endpoint. When a student
+        creates an enrollment, they are automatically assigned as the enrollee.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this enrollment.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Enrollment'
+          description: ''
+    put:
+      operationId: api_enrollments_update
+      description: |-
+        API endpoint for managing course Enrollments.
+
+        Only 'student' users can interact with this endpoint. When a student
+        creates an enrollment, they are automatically assigned as the enrollee.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this enrollment.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Enrollment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Enrollment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Enrollment'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Enrollment'
+          description: ''
+    patch:
+      operationId: api_enrollments_partial_update
+      description: |-
+        API endpoint for managing course Enrollments.
+
+        Only 'student' users can interact with this endpoint. When a student
+        creates an enrollment, they are automatically assigned as the enrollee.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this enrollment.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEnrollment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEnrollment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEnrollment'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Enrollment'
+          description: ''
+    delete:
+      operationId: api_enrollments_destroy
+      description: |-
+        API endpoint for managing course Enrollments.
+
+        Only 'student' users can interact with this endpoint. When a student
+        creates an enrollment, they are automatically assigned as the enrollee.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this enrollment.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/feedbacks/:
+    get:
+      operationId: api_feedbacks_list
+      description: |-
+        API endpoint for managing course Feedback.
+
+        - **Create:** Only authenticated 'student' users who are enrolled in the
+          specified course can create feedback.
+        - **List & Retrieve:** All authenticated users can view feedback.
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Feedback'
+          description: ''
+    post:
+      operationId: api_feedbacks_create
+      description: |-
+        API endpoint for managing course Feedback.
+
+        - **Create:** Only authenticated 'student' users who are enrolled in the
+          specified course can create feedback.
+        - **List & Retrieve:** All authenticated users can view feedback.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Feedback'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Feedback'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Feedback'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedback'
+          description: ''
+  /api/feedbacks/{id}/:
+    get:
+      operationId: api_feedbacks_retrieve
+      description: |-
+        API endpoint for managing course Feedback.
+
+        - **Create:** Only authenticated 'student' users who are enrolled in the
+          specified course can create feedback.
+        - **List & Retrieve:** All authenticated users can view feedback.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this feedback.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedback'
+          description: ''
+    put:
+      operationId: api_feedbacks_update
+      description: |-
+        API endpoint for managing course Feedback.
+
+        - **Create:** Only authenticated 'student' users who are enrolled in the
+          specified course can create feedback.
+        - **List & Retrieve:** All authenticated users can view feedback.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this feedback.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Feedback'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Feedback'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Feedback'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedback'
+          description: ''
+    patch:
+      operationId: api_feedbacks_partial_update
+      description: |-
+        API endpoint for managing course Feedback.
+
+        - **Create:** Only authenticated 'student' users who are enrolled in the
+          specified course can create feedback.
+        - **List & Retrieve:** All authenticated users can view feedback.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this feedback.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFeedback'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFeedback'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFeedback'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedback'
+          description: ''
+    delete:
+      operationId: api_feedbacks_destroy
+      description: |-
+        API endpoint for managing course Feedback.
+
+        - **Create:** Only authenticated 'student' users who are enrolled in the
+          specified course can create feedback.
+        - **List & Retrieve:** All authenticated users can view feedback.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this feedback.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/schema/:
+    get:
+      operationId: api_schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/statusupdates/:
+    get:
+      operationId: api_statusupdates_list
+      description: |-
+        API endpoint for users to post and view Status Updates.
+
+        All authenticated users can create and view status updates. The user who
+        creates the update is automatically assigned.
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StatusUpdate'
+          description: ''
+    post:
+      operationId: api_statusupdates_create
+      description: |-
+        API endpoint for users to post and view Status Updates.
+
+        All authenticated users can create and view status updates. The user who
+        creates the update is automatically assigned.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StatusUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StatusUpdate'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusUpdate'
+          description: ''
+  /api/statusupdates/{id}/:
+    get:
+      operationId: api_statusupdates_retrieve
+      description: |-
+        API endpoint for users to post and view Status Updates.
+
+        All authenticated users can create and view status updates. The user who
+        creates the update is automatically assigned.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this status update.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusUpdate'
+          description: ''
+    put:
+      operationId: api_statusupdates_update
+      description: |-
+        API endpoint for users to post and view Status Updates.
+
+        All authenticated users can create and view status updates. The user who
+        creates the update is automatically assigned.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this status update.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StatusUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StatusUpdate'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusUpdate'
+          description: ''
+    patch:
+      operationId: api_statusupdates_partial_update
+      description: |-
+        API endpoint for users to post and view Status Updates.
+
+        All authenticated users can create and view status updates. The user who
+        creates the update is automatically assigned.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this status update.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStatusUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStatusUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStatusUpdate'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusUpdate'
+          description: ''
+    delete:
+      operationId: api_statusupdates_destroy
+      description: |-
+        API endpoint for users to post and view Status Updates.
+
+        All authenticated users can create and view status updates. The user who
+        creates the update is automatically assigned.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this status update.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/users/:
+    get:
+      operationId: api_users_list
+      description: |-
+        A read-only API endpoint for viewing Users.
+
+        Provides `list` and `retrieve` actions.
+        Supports searching by `username`, `first_name`, and `last_name`.
+        Access is restricted to authenticated users.
+      parameters:
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: ''
+  /api/users/{id}/:
+    get:
+      operationId: api_users_retrieve
+      description: |-
+        A read-only API endpoint for viewing Users.
+
+        Provides `list` and `retrieve` actions.
+        Supports searching by `username`, `first_name`, and `last_name`.
+        Access is restricted to authenticated users.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+components:
+  schemas:
+    Course:
+      type: object
+      description: |-
+        Serializer for the Course model.
+
+        Includes a read-only nested representation of the 'teacher' user.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        teacher:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        course_material:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - description
+      - id
+      - teacher
+      - title
+    Enrollment:
+      type: object
+      description: |-
+        Serializer for the Enrollment model.
+
+        Includes read-only nested representations of the 'student' and 'course'.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        student:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        course:
+          allOf:
+          - $ref: '#/components/schemas/Course'
+          readOnly: true
+        enrolled_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_blocked:
+          type: boolean
+      required:
+      - course
+      - enrolled_at
+      - id
+      - student
+    Feedback:
+      type: object
+      description: |-
+        Serializer for the Feedback model.
+
+        The 'student' is read-only and automatically set to the logged-in user upon creation.
+        The 'course' is a writeable field, expecting the primary key of the course
+        for which feedback is being submitted.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        course:
+          type: integer
+        student:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        rating:
+          type: integer
+        comment:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - comment
+      - course
+      - created_at
+      - id
+      - rating
+      - student
+    PatchedCourse:
+      type: object
+      description: |-
+        Serializer for the Course model.
+
+        Includes a read-only nested representation of the 'teacher' user.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+        teacher:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        course_material:
+          type: string
+          format: uri
+          nullable: true
+    PatchedEnrollment:
+      type: object
+      description: |-
+        Serializer for the Enrollment model.
+
+        Includes read-only nested representations of the 'student' and 'course'.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        student:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        course:
+          allOf:
+          - $ref: '#/components/schemas/Course'
+          readOnly: true
+        enrolled_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_blocked:
+          type: boolean
+    PatchedFeedback:
+      type: object
+      description: |-
+        Serializer for the Feedback model.
+
+        The 'student' is read-only and automatically set to the logged-in user upon creation.
+        The 'course' is a writeable field, expecting the primary key of the course
+        for which feedback is being submitted.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        course:
+          type: integer
+        student:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        rating:
+          type: integer
+        comment:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedStatusUpdate:
+      type: object
+      description: |-
+        Serializer for the StatusUpdate model.
+
+        The 'user' is read-only and is automatically set to the logged-in user
+        when a new status update is created.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    RoleEnum:
+      enum:
+      - student
+      - teacher
+      type: string
+      description: |-
+        * `student` - Student
+        * `teacher` - Teacher
+    StatusUpdate:
+      type: object
+      description: |-
+        Serializer for the StatusUpdate model.
+
+        The 'user' is read-only and is automatically set to the logged-in user
+        when a new status update is created.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - content
+      - created_at
+      - id
+      - user
+    User:
+      type: object
+      description: |-
+        Serializer for the User model.
+
+        Provides a serialized representation of a user, including their ID,
+        username, name, and role.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - id
+      - role
+      - username
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid

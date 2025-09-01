@@ -8,11 +8,12 @@ and includes URL configurations from the 'core' and 'chat' apps.
 
 from django.contrib import admin
 from django.urls import path, include
-from django.conf import settings  # Import the settings module
-from django.conf.urls.static import static  # Import the static files helper
-
+from django.conf.urls.static import static
+from django.conf import settings
 from rest_framework.routers import DefaultRouter
+from core.api import UserViewSet, CourseViewSet, EnrollmentViewSet, FeedbackViewSet, StatusUpdateViewSet
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+
 
 # Import all the ViewSets from the core API module.
 from core.api import (
@@ -53,8 +54,8 @@ urlpatterns = [
     path('chat/', include('chat.urls')),
 
     # Include all standard (non-API) URLs from the core application. This must be last.
-    path('', include('core.urls')),
-]
+    path('', include('core.urls')),    
+ ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # This should only be used in a development environment (when DEBUG is True).
 if settings.DEBUG:
